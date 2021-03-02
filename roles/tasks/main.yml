@@ -1,0 +1,55 @@
+- name: clone VM  
+  community.general.proxmox_kvm:
+    api_user: "{{ api_user }}"
+    api_password: "{{ api_password }}"
+    api_host: "{{ api_host }}"
+    node: "{{ node }}"
+    name: "{{ item.name }}"
+    newid: "{{ item.vmid }}"
+    clone: "{{ clone_vm }}"
+    full: yes
+    loop: "{{ lookup('dict', vms) }}"
+  tags:
+    - create
+    
+- name: Set IP addresses
+  command: "qm set {{ item.value.vmid }}  --ipconfig0 ip={{ item.value.ipaddress }}"
+  loop: "{{ lookup('dict', vms) }}"
+  tags:
+    - create
+
+- name: Copy SSH key
+  command: "qm set {{ item.value.vmid }} --sshkey {{ key_name }}"
+  args:
+    chdir: ./tmp
+  loop: "{{ lookup('dict', vms) }}"
+  tags:
+    - create
+
+- name: Update VMs
+  proxmox_kvm:
+    api_host:     "{{ api_host }}"
+    api_user:     "{{ api_user }}"
+    api_password: "{{ api_password }}"
+    cores:        "{{ item.value.cores }}"
+    sockets:      "{{ item.value.sockets }}"
+    memory:       "{{ item.value.memory }}"
+    update:       yes
+    vmid:         "{{ item.value.vmid }}"
+    node:         "{{ node }}"
+    name:         "{{ item.value.name }}"
+  loop: "{{ lookup('dict', vms) }}"
+  tags:
+    - create
+
+- name: Start VMs
+  proxmox_kvm:
+    api_host:     "{{ api_host }}"
+    api_password: "{{ api_password }}"
+    api_user:     "{{ api_user }}"
+    vmid:         "{{ item.value.vmid }}"
+    node:         "{{ node }}"
+    state:        started
+  loop: "{{ lookup('dict', vms) }}"
+  tags:
+    - create

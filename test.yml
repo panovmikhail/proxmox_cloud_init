@@ -1,0 +1,22 @@
+---
+- name: test
+  hosts: all
+  remote_user: user
+  become: yes
+
+  vars:
+    vms:
+      master:
+        name: master.example.com
+        ipaddress: 192.168.1.76/24
+        vmid: 104
+      slave:
+        name: slave.example.com
+        ipaddress: 10.21.21.52/24
+        vmid: 201
+  tasks:
+    # with predefined vars
+    - name: Print phone records
+      debug:
+        msg: "User {{ item.key }} is {{ item.value.name }} ({{ item.value.ipaddress }})"
+      loop: "{{ lookup('dict', vms) }}"
