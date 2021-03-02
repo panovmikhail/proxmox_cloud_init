@@ -4,8 +4,8 @@
     api_password: "{{ api_password }}"
     api_host: "{{ api_host }}"
     node: "{{ node }}"
-    name: "{{ item.name }}"
-    newid: "{{ item.vmid }}"
+    name: "{{ item.value.name }}"
+    newid: "{{ item.value.vmid }}"
     clone: "{{ clone_vm }}"
     full: yes
     loop: "{{ lookup('dict', vms) }}"
